@@ -7,6 +7,10 @@ import org.springframework.security.core.userdetails.UserDetails;
 public class SecurityUtils {
     private static final String ADMIN_ROLE = "ROLE_ADMIN";
 
+    private SecurityUtils() {
+        throw new IllegalStateException("Cannot create an object of utility class");
+    }
+
     public static boolean isAdminLoggedIn(Authentication auth) {
         return auth.getAuthorities().stream()
                 .anyMatch(a -> a.getAuthority().equals(ADMIN_ROLE));

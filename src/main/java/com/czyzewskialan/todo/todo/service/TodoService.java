@@ -5,7 +5,6 @@ import com.czyzewskialan.todo.todo.domain.Todo;
 import com.czyzewskialan.todo.todo.persistance.TodoRepository;
 import com.czyzewskialan.todo.user.domain.User;
 import com.czyzewskialan.todo.user.service.UserService;
-import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -13,7 +12,6 @@ import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
 import javax.persistence.EntityNotFoundException;
-import java.util.List;
 import java.util.Optional;
 
 import static com.czyzewskialan.todo.security.SecurityUtils.hasAccessToTodo;

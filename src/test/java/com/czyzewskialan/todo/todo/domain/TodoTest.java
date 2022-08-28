@@ -11,7 +11,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 class TodoTest {
     @ParameterizedTest
     @MethodSource("argumentsIncreasePriority")
-    void testIncreasePriority(Todo.Priority current, Todo.Priority expected) {
+    void shouldIncreasePriorityIfItIsPossible(Todo.Priority current, Todo.Priority expected) {
         //when
         Todo.Priority increased = current.increase();
 
@@ -21,7 +21,7 @@ class TodoTest {
 
     @ParameterizedTest
     @MethodSource("argumentsDecreasePriority")
-    void testDecreasePriority(Todo.Priority current, Todo.Priority expected) {
+    void shouldDecreasePriorityIfItIsPossible(Todo.Priority current, Todo.Priority expected) {
         //when
         Todo.Priority decreased = current.decrease();
 
