@@ -13,6 +13,7 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -44,7 +45,8 @@ public class UserService {
 
     public User getLoggedInUser(Authentication auth) {
         String username = ((UserDetails) auth.getPrincipal()).getUsername();
-        return userRepository.findById(username).orElse(null);//TODO
+        return userRepository.findById(username)
+                .orElseThrow(() -> new UsernameNotFoundException(username));
     }
 
     @PreAuthorize("hasRole('ADMIN')")
@@ -55,14 +57,15 @@ public class UserService {
 
     @PreAuthorize("hasRole('ADMIN')")
     public UserDto findOne(String login) {
-        User user = userRepository.findById(login).orElseThrow(EntityNotFoundException::new);
+        User user = userRepository.findById(login)
+                .orElseThrow(() -> new EntityNotFoundException(login));
         return new UserDto(user);
     }
 
     @PreAuthorize("hasRole('ADMIN')")
     public UserDto create(UserToAdd userToAdd) {
         if (userRepository.existsById(userToAdd.getLogin())) {
-            throw new EntityExistsException();
+            throw new EntityExistsException(userToAdd.getLogin());
         }
 
         User user = User.builder()
@@ -80,20 +83,22 @@ public class UserService {
         if (userRepository.existsById(login)) {
             userRepository.deleteById(login);
         } else {
-            throw new EntityNotFoundException();
+            throw new EntityNotFoundException(login);
         }
     }
 
     @PreAuthorize("hasRole('ADMIN')")
     public void changeRole(String login, User.Role role) {
-        User user = userRepository.findById(login).orElseThrow(EntityNotFoundException::new);
+        User user = userRepository.findById(login)
+                .orElseThrow(() -> new EntityNotFoundException(login));
         user.setRole(role);
         userRepository.save(user);
     }
 
     @PreAuthorize("hasRole('ADMIN')")
     public String resetPassword(String login) {
-        User user = userRepository.findById(login).orElseThrow(EntityNotFoundException::new);
+        User user = userRepository.findById(login)
+                .orElseThrow(() -> new EntityNotFoundException(login));
         String randomPassword = RandomStringUtils.randomAlphanumeric(10);
         user.setPasswordHash(passwordEncoder.encode(randomPassword));
         userRepository.save(user);
@@ -104,7 +109,8 @@ public class UserService {
         if (!hasAccessToUser(auth, login)) {
             throw new AccessDeniedException("Access denied");
         }
-        User user = userRepository.findById(login).orElseThrow(EntityNotFoundException::new);
+        User user = userRepository.findById(login)
+                .orElseThrow(() -> new EntityNotFoundException(login));
         user.setPasswordHash(passwordEncoder.encode(newPassword));
         userRepository.save(user);
     }
