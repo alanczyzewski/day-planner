@@ -7,7 +7,9 @@ import com.czyzewskialan.todo.todo.service.SearchTodoService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -24,5 +26,11 @@ public class SearchTodoRestController {
                               Pageable pageRequest, Authentication auth) {
         TodoSearchParamsDto todoSearchParamsDto = new TodoSearchParamsDto(title, priority, completed, pageRequest);
         return searchService.find(todoSearchParamsDto, auth);
+    }
+
+    @ExceptionHandler(UsernameNotFoundException.class)
+    @ResponseStatus(value = HttpStatus.UNAUTHORIZED)
+    public String usernameNotFoundHandler(UsernameNotFoundException e) {
+        return String.format("User \"%s\" does not exist.", e.getMessage());
     }
 }

@@ -61,14 +61,14 @@ public class UserController {
 
     @ExceptionHandler(EntityExistsException.class)
     @ResponseStatus(value = HttpStatus.CONFLICT)
-    public String entityExistsHandler() {
-        return "User with this username does not exist anymore.";
+    public String entityExistsHandler(EntityExistsException e) {
+        return String.format("User \"%s\" already exists.", e.getMessage());
     }
 
     @ExceptionHandler(EntityNotFoundException.class)
     @ResponseStatus(value = HttpStatus.NOT_FOUND)
-    public String entityNotFoundHandler() {
-        return "User with this username not found.";
+    public String entityNotFoundHandler(EntityNotFoundException e) {
+        return String.format("User \"%s\" not found.", e.getMessage());
     }
 
 }
