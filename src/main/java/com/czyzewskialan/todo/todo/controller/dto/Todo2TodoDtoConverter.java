@@ -15,6 +15,6 @@ public class Todo2TodoDtoConverter implements Function<Todo, TodoDto> {
     @Override
     public TodoDto apply(Todo todo) {
         return new TodoDto(todo.getTitle(), todo.getPriority(), todo.getDescription(), todo.isCompleted(),
-                user2UserDtoConverter.apply(todo.getUser()));
+                todo.getDateCreated(), todo.getDateUpdated(), user2UserDtoConverter.apply(todo.getUser()));
     }
 }

@@ -11,7 +11,6 @@ import javax.persistence.*;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 
 @Data
@@ -35,12 +34,21 @@ public class User {
 
     private LocalDateTime dateCreated;
 
+    private LocalDateTime dateUpdated;
+
     @OneToMany(mappedBy = "user", cascade = CascadeType.PERSIST)
     private List<Todo> todos;
 
     @PrePersist
     void prePersist() {
-        dateCreated = LocalDateTime.now();
+        LocalDateTime now = LocalDateTime.now();
+        dateCreated = now;
+        dateUpdated = now;
+    }
+
+    @PreUpdate
+    void preUpdate() {
+        dateUpdated = LocalDateTime.now();
     }
 
     public enum Role {

@@ -2,5 +2,7 @@ package com.czyzewskialan.todo.user.controller.dto;
 
 import com.czyzewskialan.todo.user.domain.User;
 
-public record UserDto(String login, User.Role role) {
+import java.time.LocalDateTime;
+
+public record UserDto(String login, User.Role role, LocalDateTime dateCreated, LocalDateTime dateUpdated) {
 }

@@ -10,6 +10,6 @@ public class User2UserDtoConverter implements Function<User, UserDto> {
 
     @Override
     public UserDto apply(User user) {
-        return new UserDto(user.getLogin(), user.getRole());
+        return new UserDto(user.getLogin(), user.getRole(), user.getDateCreated(), user.getDateUpdated());
     }
 }

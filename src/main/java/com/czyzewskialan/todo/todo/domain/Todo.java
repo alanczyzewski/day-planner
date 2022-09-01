@@ -7,6 +7,7 @@ import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 import java.io.Serial;
 import java.io.Serializable;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "TODOS")
@@ -35,20 +36,26 @@ public class Todo implements Serializable {
 
     private Priority priority;
 
+    private LocalDateTime dateCreated;
+
+    private LocalDateTime dateUpdated;
+
     @ToString.Exclude
     @ManyToOne
     @JoinColumn(name = "username", nullable = false)
     private User user;
 
-//    public Priority increasePriority() {
-//        priority = priority.increase();
-//        return priority;
-//    }
-//
-//    public Priority decreasePriority() {
-//        priority = priority.decrease();
-//        return priority;
-//    }
+    @PrePersist
+    void prePersist() {
+        LocalDateTime now = LocalDateTime.now();
+        dateCreated = now;
+        dateUpdated = now;
+    }
+
+    @PreUpdate
+    void preUpdate() {
+        dateUpdated = LocalDateTime.now();
+    }
 
     public enum Priority {
         HIGH(0) {
