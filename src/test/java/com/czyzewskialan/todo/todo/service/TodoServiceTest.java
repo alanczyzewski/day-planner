@@ -1,9 +1,11 @@
 package com.czyzewskialan.todo.todo.service;
 
 import com.czyzewskialan.todo.security.model.CurrentUser;
+import com.czyzewskialan.todo.todo.controller.dto.Todo2TodoDtoConverter;
 import com.czyzewskialan.todo.todo.controller.dto.TodoDto;
 import com.czyzewskialan.todo.todo.domain.Todo;
 import com.czyzewskialan.todo.todo.persistance.TodoRepository;
+import com.czyzewskialan.todo.user.controller.dto.User2UserDtoConverter;
 import com.czyzewskialan.todo.user.domain.User;
 import com.czyzewskialan.todo.user.service.UserService;
 import org.junit.jupiter.api.AfterEach;
@@ -58,7 +60,8 @@ class TodoServiceTest {
     @BeforeEach
     void setUp() {
         autoCloseable = openMocks(this);
-        todoService = new TodoService(todoRepository, userService);
+        Todo2TodoDtoConverter todo2TodoDtoConverter = new Todo2TodoDtoConverter(new User2UserDtoConverter());
+        todoService = new TodoService(todoRepository, userService, todo2TodoDtoConverter);
     }
 
     @AfterEach
@@ -167,8 +170,8 @@ class TodoServiceTest {
         TodoDto todoDto = todoService.getOne(TODO_ID, authentication);
 
         //then
-        assertThat(todoDto.getUser().getLogin()).isEqualTo(USERNAME_PLAIN_USER);
-        assertThat(todoDto.getTitle()).isEqualTo(TITLE);
+        assertThat(todoDto.user().login()).isEqualTo(USERNAME_PLAIN_USER);
+        assertThat(todoDto.title()).isEqualTo(TITLE);
     }
 
     @Test
@@ -186,8 +189,8 @@ class TodoServiceTest {
         TodoDto todoDto = todoService.getOne(TODO_ID, authentication);
 
         //then
-        assertThat(todoDto.getUser().getLogin()).isEqualTo(USERNAME_PLAIN_USER);
-        assertThat(todoDto.getTitle()).isEqualTo(TITLE);
+        assertThat(todoDto.user().login()).isEqualTo(USERNAME_PLAIN_USER);
+        assertThat(todoDto.title()).isEqualTo(TITLE);
     }
 
     @Test

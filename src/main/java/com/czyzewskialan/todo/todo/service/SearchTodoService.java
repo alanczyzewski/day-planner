@@ -1,5 +1,6 @@
 package com.czyzewskialan.todo.todo.service;
 
+import com.czyzewskialan.todo.todo.controller.dto.Todo2TodoDtoConverter;
 import com.czyzewskialan.todo.todo.controller.dto.TodoDto;
 import com.czyzewskialan.todo.todo.controller.dto.TodoSearchParamsDto;
 import com.czyzewskialan.todo.todo.domain.Todo;
@@ -22,6 +23,7 @@ public class SearchTodoService {
 
     private final TodoRepository todoRepository;
     private final UserService userService;
+    private final Todo2TodoDtoConverter todo2TodoDtoConverter;
 
     public Page<TodoDto> find(TodoSearchParamsDto searchParams, Authentication auth) {
         return todoRepository.findAll(
@@ -30,7 +32,7 @@ public class SearchTodoService {
                                 .and(getSpecificationPriority(searchParams.getPriority()))
                                 .and(getSpecificationCompleted(searchParams.getCompleted())),
                         searchParams.getPageRequest())
-                .map(TodoDto::new);
+                .map(todo2TodoDtoConverter);
     }
 
     private Specification<Todo> getSpecificationUser(Authentication auth) {

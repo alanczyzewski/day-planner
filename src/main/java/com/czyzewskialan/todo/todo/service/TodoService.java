@@ -1,5 +1,6 @@
 package com.czyzewskialan.todo.todo.service;
 
+import com.czyzewskialan.todo.todo.controller.dto.Todo2TodoDtoConverter;
 import com.czyzewskialan.todo.todo.controller.dto.TodoDto;
 import com.czyzewskialan.todo.todo.domain.Todo;
 import com.czyzewskialan.todo.todo.persistance.TodoRepository;
@@ -23,28 +24,30 @@ public class TodoService {
 
     private final TodoRepository todoRepository;
     private final UserService userService;
+    private final Todo2TodoDtoConverter todo2TodoDtoConverter;
 
     public Page<TodoDto> findAll(Pageable pageRequest, Authentication auth) {
         if (isAdminLoggedIn(auth)) {
             return todoRepository.findAll(pageRequest)
-                    .map(TodoDto::new);
+                    .map(todo2TodoDtoConverter);
         }
         User user = userService.getLoggedInUser(auth);
         return todoRepository.findByUser(user, pageRequest)
-                .map(TodoDto::new);
+                .map(todo2TodoDtoConverter);
     }
 
     public TodoDto create(Todo todo, Authentication auth) {
         User user = userService.getLoggedInUser(auth);
         todo.setUser(user);
         todo.setId(null);
-        return new TodoDto(todoRepository.save(todo));
+        Todo savedTodo = todoRepository.save(todo);
+        return todo2TodoDtoConverter.apply(savedTodo);
     }
 
     public TodoDto getOne(Long id, Authentication auth) throws EntityNotFoundException {
         Todo todo = todoRepository.findById(id).orElseThrow(EntityNotFoundException::new);
         if (hasAccessToTodo(auth, todo)) {
-            return new TodoDto(todo);
+            return todo2TodoDtoConverter.apply(todo);
         } else {
             throw new EntityNotFoundException();
         }

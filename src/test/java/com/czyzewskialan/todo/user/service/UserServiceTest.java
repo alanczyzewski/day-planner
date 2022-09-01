@@ -132,7 +132,7 @@ class UserServiceTest {
 
         //then
         verify(userRepository).findById(USERNAME_1);
-        assertThat(userDto.getLogin()).isEqualTo(USERNAME_1);
+        assertThat(userDto.login()).isEqualTo(USERNAME_1);
     }
 
     @Test
@@ -174,7 +174,7 @@ class UserServiceTest {
 
         //then
         verify(userRepository).save(any(User.class));
-        assertThat(userDto.getLogin()).isEqualTo(USERNAME_1);
+        assertThat(userDto.login()).isEqualTo(USERNAME_1);
     }
 
     @Test
