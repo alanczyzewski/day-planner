@@ -5,8 +5,8 @@ import com.czyzewskialan.todo.user.controller.dto.UserDto;
 import com.czyzewskialan.todo.user.controller.dto.UserToAdd;
 import com.czyzewskialan.todo.user.domain.User;
 import com.czyzewskialan.todo.user.persistance.UserRepository;
+import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.RandomStringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.AccessDeniedException;
@@ -23,25 +23,13 @@ import javax.persistence.EntityNotFoundException;
 import static com.czyzewskialan.todo.security.SecurityUtils.hasAccessToUser;
 
 @Service
+@RequiredArgsConstructor
 public class UserService {
+    static final String MESSAGE_ACCESS_DENIED_CHANGE_PASSWORD = "Cannot change other user's password";
 
-    private UserRepository userRepository;
-    private PasswordEncoder passwordEncoder;
-    private final User2UserDtoConverter converter;
-
-    public UserService() {
-        this.converter = new User2UserDtoConverter();
-    }
-
-    @Autowired
-    public void setUserRepository(UserRepository userRepository) {
-        this.userRepository = userRepository;
-    }
-
-    @Autowired
-    public void setPasswordEncoder(PasswordEncoder passwordEncoder) {
-        this.passwordEncoder = passwordEncoder;
-    }
+    private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
+    private final User2UserDtoConverter user2UserDtoConverter;
 
     public User getLoggedInUser(Authentication auth) {
         String username = ((UserDetails) auth.getPrincipal()).getUsername();
@@ -52,14 +40,14 @@ public class UserService {
     @PreAuthorize("hasRole('ADMIN')")
     public Page<UserDto> findAll(Pageable pageRequest) {
         return userRepository.findAll(pageRequest)
-                .map(converter);
+                .map(user2UserDtoConverter);
     }
 
     @PreAuthorize("hasRole('ADMIN')")
     public UserDto findOne(String login) {
-        User user = userRepository.findById(login)
+        return userRepository.findById(login)
+                .map(user2UserDtoConverter)
                 .orElseThrow(() -> new EntityNotFoundException(login));
-        return new UserDto(user);
     }
 
     @PreAuthorize("hasRole('ADMIN')")
@@ -72,10 +60,8 @@ public class UserService {
                 .login(userToAdd.getLogin())
                 .passwordHash(passwordEncoder.encode(userToAdd.getPassword()))
                 .role(userToAdd.getRole()).build();
-
         User userSaved = userRepository.save(user);
-
-        return new UserDto(userSaved);
+        return user2UserDtoConverter.apply(userSaved);
     }
 
     @PreAuthorize("hasRole('ADMIN')")
@@ -107,7 +93,7 @@ public class UserService {
 
     public void changePassword(String login, String newPassword, Authentication auth) {
         if (!hasAccessToUser(auth, login)) {
-            throw new AccessDeniedException("Access denied");
+            throw new AccessDeniedException(MESSAGE_ACCESS_DENIED_CHANGE_PASSWORD);
         }
         User user = userRepository.findById(login)
                 .orElseThrow(() -> new EntityNotFoundException(login));

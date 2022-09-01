@@ -36,28 +36,32 @@ public class SearchTodoService {
     private Specification<Todo> getSpecificationUser(Authentication auth) {
         if (!isAdminLoggedIn(auth)) {
             return (root, query, builder) -> builder.equal(root.get("user"), userService.getLoggedInUser(auth));
+        } else {
+            return null;
         }
-        return null;
     }
 
     private Specification<Todo> getSpecificationTitle(String title) {
         if (!isNullOrEmpty(title)) {
             return (root, query, builder) -> builder.equal(root.get("title"), title);
+        } else {
+            return null;
         }
-        return null;
     }
 
     private Specification<Todo> getSpecificationPriority(Todo.Priority priority) {
         if (nonNull(priority)) {
             return (root, query, builder) -> builder.equal(root.get("priority"), priority);
+        } else {
+            return null;
         }
-        return null;
     }
 
     private Specification<Todo> getSpecificationCompleted(Boolean completed) {
         if (nonNull(completed)) {
             return (root, query, builder) -> builder.equal(root.get("completed"), completed);
+        } else {
+            return null;
         }
-        return null;
     }
 }
