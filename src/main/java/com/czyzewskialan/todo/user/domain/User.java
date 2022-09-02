@@ -2,10 +2,7 @@ package com.czyzewskialan.todo.user.domain;
 
 import com.czyzewskialan.todo.todo.domain.Todo;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotEmpty;
@@ -16,7 +13,7 @@ import java.util.List;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@Builder
+@Builder(toBuilder = true)
 @Entity
 @Table(name = "USERS")
 public class User {
@@ -36,6 +33,7 @@ public class User {
 
     private LocalDateTime dateUpdated;
 
+    @ToString.Exclude
     @OneToMany(mappedBy = "user", cascade = CascadeType.PERSIST)
     private List<Todo> todos;
 

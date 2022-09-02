@@ -1,7 +1,7 @@
 package com.czyzewskialan.todo.user.controller;
 
 import com.czyzewskialan.todo.user.controller.dto.UserDto;
-import com.czyzewskialan.todo.user.controller.dto.UserToAdd;
+import com.czyzewskialan.todo.user.controller.dto.UserToAddDto;
 import com.czyzewskialan.todo.user.domain.User;
 import com.czyzewskialan.todo.user.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -33,7 +33,7 @@ public class UserController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public UserDto create(@RequestBody @Valid UserToAdd user) {
+    public UserDto create(@RequestBody @Valid UserToAddDto user) {
         return userService.create(user);
     }
 

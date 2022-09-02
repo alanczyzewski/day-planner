@@ -3,7 +3,7 @@ package com.czyzewskialan.todo.user.service;
 import com.czyzewskialan.todo.security.model.CurrentUser;
 import com.czyzewskialan.todo.user.controller.dto.User2UserDtoConverter;
 import com.czyzewskialan.todo.user.controller.dto.UserDto;
-import com.czyzewskialan.todo.user.controller.dto.UserToAdd;
+import com.czyzewskialan.todo.user.controller.dto.UserToAddDto;
 import com.czyzewskialan.todo.user.domain.User;
 import com.czyzewskialan.todo.user.persistance.UserRepository;
 import org.junit.jupiter.api.AfterEach;
@@ -150,7 +150,7 @@ class UserServiceTest {
     @Test
     void shouldThrowEntityExistsExceptionWhenUserAlreadyExists() {
         //given
-        UserToAdd userToAdd = UserToAdd.builder().login(USERNAME_1).build();
+        UserToAddDto userToAdd = UserToAddDto.builder().login(USERNAME_1).build();
         when(userRepository.existsById(USERNAME_1))
                 .thenReturn(true);
 
@@ -163,7 +163,7 @@ class UserServiceTest {
     @Test
     void shouldSaveNewUser() {
         //given
-        UserToAdd userToAdd = UserToAdd.builder().login(USERNAME_1).build();
+        UserToAddDto userToAdd = UserToAddDto.builder().login(USERNAME_1).build();
         when(userRepository.existsById(USERNAME_1))
                 .thenReturn(false);
         when(userRepository.save(any(User.class)))

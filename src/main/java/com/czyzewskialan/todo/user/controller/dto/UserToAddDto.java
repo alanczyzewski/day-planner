@@ -9,7 +9,7 @@ import org.hibernate.validator.constraints.NotEmpty;
 @Builder
 @Getter
 @Setter
-public class UserToAdd {
+public class UserToAddDto {
 
     @NotEmpty
     private String login;

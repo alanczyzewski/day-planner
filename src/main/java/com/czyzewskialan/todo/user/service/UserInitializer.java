@@ -28,8 +28,8 @@ public class UserInitializer {
 
         Stream.of(admin, plain)
                 .forEach(user -> {
-                    userRepository.save(user);
-                    log.info("user added: {}", user);
+                    User savedUser = userRepository.save(user);
+                    log.info("User {} has been created.", savedUser);
                 });
 
         Todo todoAdmin1 = Todo.builder()
@@ -57,8 +57,8 @@ public class UserInitializer {
 
         Stream.of(todoAdmin1, todoAdmin2, todoUser1, todoUser2)
                 .forEach(todo -> {
-                    todoRepository.save(todo);
-                    log.info("todo added: {}", todo);
+                    Todo savedTodo = todoRepository.save(todo);
+                    log.info("Todo {} has been created.", savedTodo);
                 });
     }
 }

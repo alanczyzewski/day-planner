@@ -2,10 +2,11 @@ package com.czyzewskialan.todo.user.service;
 
 import com.czyzewskialan.todo.user.controller.dto.User2UserDtoConverter;
 import com.czyzewskialan.todo.user.controller.dto.UserDto;
-import com.czyzewskialan.todo.user.controller.dto.UserToAdd;
+import com.czyzewskialan.todo.user.controller.dto.UserToAddDto;
 import com.czyzewskialan.todo.user.domain.User;
 import com.czyzewskialan.todo.user.persistance.UserRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -21,9 +22,11 @@ import javax.persistence.EntityExistsException;
 import javax.persistence.EntityNotFoundException;
 
 import static com.czyzewskialan.todo.security.SecurityUtils.hasAccessToUser;
+import static com.czyzewskialan.todo.utils.LoggingUtils.obfuscatePasswordHash;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class UserService {
     static final String MESSAGE_ACCESS_DENIED_CHANGE_PASSWORD = "Cannot change other user's password";
 
@@ -51,7 +54,7 @@ public class UserService {
     }
 
     @PreAuthorize("hasRole('ADMIN')")
-    public UserDto create(UserToAdd userToAdd) {
+    public UserDto create(UserToAddDto userToAdd) {
         if (userRepository.existsById(userToAdd.getLogin())) {
             throw new EntityExistsException(userToAdd.getLogin());
         }
@@ -61,6 +64,7 @@ public class UserService {
                 .passwordHash(passwordEncoder.encode(userToAdd.getPassword()))
                 .role(userToAdd.getRole()).build();
         User userSaved = userRepository.save(user);
+        log.info("User {} has been created.", obfuscatePasswordHash(user));
         return user2UserDtoConverter.apply(userSaved);
     }
 
@@ -68,6 +72,7 @@ public class UserService {
     public void delete(String login) {
         if (userRepository.existsById(login)) {
             userRepository.deleteById(login);
+            log.info("User \"{}\" has been removed from the database.", login);
         } else {
             throw new EntityNotFoundException(login);
         }
@@ -79,6 +84,7 @@ public class UserService {
                 .orElseThrow(() -> new EntityNotFoundException(login));
         user.setRole(role);
         userRepository.save(user);
+        log.info("Set \"{}\" role for user {}.", role.name(), obfuscatePasswordHash(user));
     }
 
     @PreAuthorize("hasRole('ADMIN')")
@@ -88,6 +94,7 @@ public class UserService {
         String randomPassword = RandomStringUtils.randomAlphanumeric(10);
         user.setPasswordHash(passwordEncoder.encode(randomPassword));
         userRepository.save(user);
+        log.info("Reset password for user {}.", obfuscatePasswordHash(user));
         return randomPassword;
     }
 
@@ -99,5 +106,6 @@ public class UserService {
                 .orElseThrow(() -> new EntityNotFoundException(login));
         user.setPasswordHash(passwordEncoder.encode(newPassword));
         userRepository.save(user);
+        log.info("Changed password for user {}.", obfuscatePasswordHash(user));
     }
 }

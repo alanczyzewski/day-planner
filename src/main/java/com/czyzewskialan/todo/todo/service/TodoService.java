@@ -7,6 +7,7 @@ import com.czyzewskialan.todo.todo.persistance.TodoRepository;
 import com.czyzewskialan.todo.user.domain.User;
 import com.czyzewskialan.todo.user.service.UserService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.Authentication;
@@ -20,6 +21,7 @@ import static com.czyzewskialan.todo.security.SecurityUtils.isAdminLoggedIn;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class TodoService {
 
     private final TodoRepository todoRepository;
@@ -41,6 +43,7 @@ public class TodoService {
         todo.setUser(user);
         todo.setId(null);
         Todo savedTodo = todoRepository.save(todo);
+        log.info("Todo {} has been created.", savedTodo);
         return todo2TodoDtoConverter.apply(savedTodo);
     }
 
@@ -53,13 +56,15 @@ public class TodoService {
         }
     }
 
-    public void update(Todo todoToUpdate, Authentication auth) {
+    public TodoDto update(Todo todoToUpdate, Authentication auth) {
         Optional<Todo> foundTodo = todoRepository.findById(todoToUpdate.getId());
         if (foundTodo.isPresent() && hasAccessToTodo(auth, foundTodo.get())) {
             todoToUpdate.setUser(foundTodo.get().getUser());
-            todoRepository.save(todoToUpdate);
+            Todo savedTodo = todoRepository.save(todoToUpdate);
+            log.info("Todo {} has been updated.", savedTodo);
+            return todo2TodoDtoConverter.apply(savedTodo);
         } else {
-            create(todoToUpdate, auth);
+            return create(todoToUpdate, auth);
         }
     }
 
@@ -67,6 +72,7 @@ public class TodoService {
         Todo todo = todoRepository.findById(id).orElseThrow(EntityNotFoundException::new);
         if (hasAccessToTodo(auth, todo)) {
             todoRepository.deleteById(id);
+            log.info("Todo {} has been removed from the database.", todo);
         } else {
             throw new EntityNotFoundException();
         }
