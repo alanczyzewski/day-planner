@@ -32,7 +32,7 @@ public class Todo implements Serializable {
 
     private String description;
 
-    private boolean completed = false;
+    private Boolean completed = false;
 
     private Priority priority;
 

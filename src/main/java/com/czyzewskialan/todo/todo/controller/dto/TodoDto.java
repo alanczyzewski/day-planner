@@ -5,6 +5,6 @@ import com.czyzewskialan.todo.user.controller.dto.UserDto;
 
 import java.time.LocalDateTime;
 
-public record TodoDto(String title, Todo.Priority priority, String description, boolean completed,
+public record TodoDto(String title, Todo.Priority priority, String description, Boolean completed,
                       LocalDateTime dateCreated, LocalDateTime dateUpdated, UserDto user) {
 }

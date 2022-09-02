@@ -3,6 +3,8 @@ package com.czyzewskialan.todo.todo.service;
 import com.czyzewskialan.todo.security.model.CurrentUser;
 import com.czyzewskialan.todo.todo.controller.dto.Todo2TodoDtoConverter;
 import com.czyzewskialan.todo.todo.controller.dto.TodoDto;
+import com.czyzewskialan.todo.todo.controller.dto.TodoToAdd2TodoConverter;
+import com.czyzewskialan.todo.todo.controller.dto.TodoToAddDto;
 import com.czyzewskialan.todo.todo.domain.Todo;
 import com.czyzewskialan.todo.todo.persistance.TodoRepository;
 import com.czyzewskialan.todo.user.controller.dto.User2UserDtoConverter;
@@ -61,7 +63,7 @@ class TodoServiceTest {
     void setUp() {
         autoCloseable = openMocks(this);
         Todo2TodoDtoConverter todo2TodoDtoConverter = new Todo2TodoDtoConverter(new User2UserDtoConverter());
-        todoService = new TodoService(todoRepository, userService, todo2TodoDtoConverter);
+        todoService = new TodoService(todoRepository, userService, todo2TodoDtoConverter, new TodoToAdd2TodoConverter());
     }
 
     @AfterEach
@@ -108,13 +110,12 @@ class TodoServiceTest {
     @Test
     void shouldCreateTodoWithoutIdAndWithCorrectUser() {
         //given
-        Todo todoToAdd = Todo.builder().id(TODO_ID).title(TITLE).priority(Todo.Priority.MEDIUM)
-                .description(DESCRIPTION).completed(false).user(USER_ADMIN).build();
+        TodoToAddDto todoToAdd = new TodoToAddDto(TITLE, Todo.Priority.MEDIUM, DESCRIPTION, false);
 
         when(userService.getLoggedInUser(any(Authentication.class)))
                 .thenReturn(USER_PLAIN);
         when(todoRepository.save(any(Todo.class)))
-                .thenReturn(todoToAdd);
+                .thenReturn(Todo.builder().id(TODO_ID).user(USER_PLAIN).build());
 
         //when
         todoService.create(todoToAdd, authentication);
@@ -125,7 +126,11 @@ class TodoServiceTest {
 
         Todo todoRightBeforeSaving = todoArgumentCaptor.getValue();
         assertThat(todoRightBeforeSaving.getId()).isNull();
-        assertThat(todoRightBeforeSaving.getUser().getLogin()).isEqualTo(USERNAME_PLAIN_USER);
+        assertThat(todoRightBeforeSaving.getUser()).isEqualTo(USER_PLAIN);
+        assertThat(todoRightBeforeSaving.getTitle()).isEqualTo(TITLE);
+        assertThat(todoRightBeforeSaving.getPriority()).isEqualTo(Todo.Priority.MEDIUM);
+        assertThat(todoRightBeforeSaving.getDescription()).isEqualTo(DESCRIPTION);
+        assertThat(todoRightBeforeSaving.getCompleted()).isFalse();
     }
 
     @Test
@@ -198,16 +203,15 @@ class TodoServiceTest {
         //given
         when(todoRepository.findById(TODO_ID))
                 .thenReturn(Optional.empty());
-        Todo todoToUpdate = Todo.builder().id(TODO_ID).title(TITLE).priority(Todo.Priority.MEDIUM)
-                .description(DESCRIPTION).completed(false).user(USER_ADMIN).build();
+        TodoToAddDto todoToUpdate = new TodoToAddDto(NEW_TITLE, Todo.Priority.MEDIUM, DESCRIPTION, false);
 
         when(userService.getLoggedInUser(any(Authentication.class)))
                 .thenReturn(USER_PLAIN);
         when(todoRepository.save(any(Todo.class)))
-                .thenReturn(todoToUpdate);
+                .thenReturn(Todo.builder().id(TODO_ID).user(USER_PLAIN).build());
 
         //when
-        todoService.update(todoToUpdate, authentication);
+        todoService.update(todoToUpdate,TODO_ID, authentication);
 
         //then
         verify(todoRepository).findById(TODO_ID);
@@ -218,8 +222,7 @@ class TodoServiceTest {
     @Test
     void shouldCreateNewTodoWhenTheUserTriesToUpdateTodoAssignedToOtherUser() {
         //given
-        Todo todoToUpdate = Todo.builder().id(TODO_ID).title(TITLE).priority(Todo.Priority.MEDIUM)
-                .description(DESCRIPTION).completed(false).user(USER_ADMIN).build();
+        TodoToAddDto todoToUpdate = new TodoToAddDto(TITLE, Todo.Priority.MEDIUM, DESCRIPTION, false);
         Todo todoOtherUser = Todo.builder().title(TITLE).user(USER_ADMIN).build();
 
         when(todoRepository.findById(TODO_ID))
@@ -231,10 +234,10 @@ class TodoServiceTest {
         when(userService.getLoggedInUser(any(Authentication.class)))
                 .thenReturn(USER_PLAIN);
         when(todoRepository.save(any(Todo.class)))
-                .thenReturn(todoToUpdate);
+                .thenReturn(Todo.builder().id(TODO_ID).user(USER_PLAIN).build());
 
         //when
-        todoService.update(todoToUpdate, authentication);
+        todoService.update(todoToUpdate, TODO_ID, authentication);
 
         //then
         verify(todoRepository).findById(TODO_ID);
@@ -245,8 +248,7 @@ class TodoServiceTest {
     @Test
     void shouldUpdateTodoWhenTheUserTriesToUpdateTodoAssignedToThem() {
         //given
-        Todo todoToUpdate = Todo.builder().id(TODO_ID).title(NEW_TITLE).priority(Todo.Priority.MEDIUM)
-                .description(DESCRIPTION).completed(false).user(USER_ADMIN).build();
+        TodoToAddDto todoToUpdate = new TodoToAddDto(NEW_TITLE, null, null, null);
         Todo todoBeforeUpdate = Todo.builder().id(TODO_ID).title(TITLE).priority(Todo.Priority.MEDIUM)
                 .description(DESCRIPTION).completed(false).user(USER_PLAIN).build();
 
@@ -257,25 +259,27 @@ class TodoServiceTest {
         when(authentication.getPrincipal())
                 .thenReturn(CURRENT_USER_PLAIN_USER);
         when(todoRepository.save(any(Todo.class)))
-                .thenReturn(todoToUpdate);
+                .thenReturn(Todo.builder().id(TODO_ID).user(USER_PLAIN).build());
 
         //when
-        todoService.update(todoToUpdate, authentication);
+        todoService.update(todoToUpdate, TODO_ID, authentication);
 
         //then
         verify(todoRepository).findById(TODO_ID);
         verify(userService, never()).getLoggedInUser(authentication);
         verify(todoRepository).save(todoArgumentCaptor.capture());
         Todo todoRightBeforeUpdate = todoArgumentCaptor.getValue();
-        assertThat(todoRightBeforeUpdate.getUser()).isEqualTo(USER_PLAIN);
         assertThat(todoRightBeforeUpdate.getTitle()).isEqualTo(NEW_TITLE);
+        assertThat(todoRightBeforeUpdate.getUser()).isEqualTo(USER_PLAIN);
+        assertThat(todoRightBeforeUpdate.getPriority()).isEqualTo(todoBeforeUpdate.getPriority());
+        assertThat(todoRightBeforeUpdate.getDescription()).isEqualTo(todoBeforeUpdate.getDescription());
+        assertThat(todoRightBeforeUpdate.getCompleted()).isEqualTo(todoBeforeUpdate.getCompleted());
     }
 
     @Test
     void shouldUpdateTodoWhenTheAdminTriesToUpdateTodoAssignedToOtherUser() {
         //given
-        Todo todoToUpdate = Todo.builder().id(TODO_ID).title(NEW_TITLE).priority(Todo.Priority.MEDIUM)
-                .description(DESCRIPTION).completed(false).user(USER_ADMIN).build();
+        TodoToAddDto todoToUpdate = new TodoToAddDto(null, Todo.Priority.HIGH, DESCRIPTION, null);
         Todo todoOtherUser = Todo.builder().title(TITLE).user(USER_PLAIN).build();
 
         when(todoRepository.findById(TODO_ID))
@@ -287,18 +291,21 @@ class TodoServiceTest {
         when(userService.getLoggedInUser(any(Authentication.class)))
                 .thenReturn(USER_ADMIN);
         when(todoRepository.save(any(Todo.class)))
-                .thenReturn(todoToUpdate);
+                .thenReturn(Todo.builder().id(TODO_ID).user(USER_PLAIN).build());
 
         //when
-        todoService.update(todoToUpdate, authentication);
+        todoService.update(todoToUpdate, TODO_ID, authentication);
 
         //then
         verify(todoRepository).findById(TODO_ID);
         verify(userService, never()).getLoggedInUser(authentication);
         verify(todoRepository).save(todoArgumentCaptor.capture());
         Todo todoRightBeforeUpdate = todoArgumentCaptor.getValue();
+        assertThat(todoRightBeforeUpdate.getPriority()).isEqualTo(Todo.Priority.HIGH);
+        assertThat(todoRightBeforeUpdate.getDescription()).isEqualTo(DESCRIPTION);
         assertThat(todoRightBeforeUpdate.getUser()).isEqualTo(USER_PLAIN);
-        assertThat(todoRightBeforeUpdate.getTitle()).isEqualTo(NEW_TITLE);
+        assertThat(todoRightBeforeUpdate.getCompleted()).isEqualTo(todoOtherUser.getCompleted());
+        assertThat(todoRightBeforeUpdate.getTitle()).isEqualTo(todoOtherUser.getTitle());
     }
 
     @Test

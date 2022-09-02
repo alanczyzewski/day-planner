@@ -2,6 +2,7 @@ package com.czyzewskialan.todo.user.service;
 
 import com.czyzewskialan.todo.user.controller.dto.User2UserDtoConverter;
 import com.czyzewskialan.todo.user.controller.dto.UserDto;
+import com.czyzewskialan.todo.user.controller.dto.UserToAdd2UserConverter;
 import com.czyzewskialan.todo.user.controller.dto.UserToAddDto;
 import com.czyzewskialan.todo.user.domain.User;
 import com.czyzewskialan.todo.user.persistance.UserRepository;
@@ -33,6 +34,7 @@ public class UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final User2UserDtoConverter user2UserDtoConverter;
+    private final UserToAdd2UserConverter userToAdd2UserConverter;
 
     public User getLoggedInUser(Authentication auth) {
         String username = ((UserDetails) auth.getPrincipal()).getUsername();
@@ -58,11 +60,7 @@ public class UserService {
         if (userRepository.existsById(userToAdd.getLogin())) {
             throw new EntityExistsException(userToAdd.getLogin());
         }
-
-        User user = User.builder()
-                .login(userToAdd.getLogin())
-                .passwordHash(passwordEncoder.encode(userToAdd.getPassword()))
-                .role(userToAdd.getRole()).build();
+        User user = userToAdd2UserConverter.apply(userToAdd);
         User userSaved = userRepository.save(user);
         log.info("User {} has been created.", obfuscatePasswordHash(user));
         return user2UserDtoConverter.apply(userSaved);

@@ -2,6 +2,8 @@ package com.czyzewskialan.todo.todo.service;
 
 import com.czyzewskialan.todo.todo.controller.dto.Todo2TodoDtoConverter;
 import com.czyzewskialan.todo.todo.controller.dto.TodoDto;
+import com.czyzewskialan.todo.todo.controller.dto.TodoToAdd2TodoConverter;
+import com.czyzewskialan.todo.todo.controller.dto.TodoToAddDto;
 import com.czyzewskialan.todo.todo.domain.Todo;
 import com.czyzewskialan.todo.todo.persistance.TodoRepository;
 import com.czyzewskialan.todo.user.domain.User;
@@ -27,6 +29,7 @@ public class TodoService {
     private final TodoRepository todoRepository;
     private final UserService userService;
     private final Todo2TodoDtoConverter todo2TodoDtoConverter;
+    private final TodoToAdd2TodoConverter todoToAdd2TodoConverter;
 
     public Page<TodoDto> findAll(Pageable pageRequest, Authentication auth) {
         if (isAdminLoggedIn(auth)) {
@@ -38,10 +41,10 @@ public class TodoService {
                 .map(todo2TodoDtoConverter);
     }
 
-    public TodoDto create(Todo todo, Authentication auth) {
+    public TodoDto create(TodoToAddDto todoToAdd, Authentication auth) {
+        Todo todo = todoToAdd2TodoConverter.apply(todoToAdd);
         User user = userService.getLoggedInUser(auth);
         todo.setUser(user);
-        todo.setId(null);
         Todo savedTodo = todoRepository.save(todo);
         log.info("Todo {} has been created.", savedTodo);
         return todo2TodoDtoConverter.apply(savedTodo);
@@ -56,16 +59,32 @@ public class TodoService {
         }
     }
 
-    public TodoDto update(Todo todoToUpdate, Authentication auth) {
-        Optional<Todo> foundTodo = todoRepository.findById(todoToUpdate.getId());
+    public TodoDto update(TodoToAddDto todoToUpdate, Long todoId, Authentication auth) {
+        Optional<Todo> foundTodo = todoRepository.findById(todoId);
         if (foundTodo.isPresent() && hasAccessToTodo(auth, foundTodo.get())) {
-            todoToUpdate.setUser(foundTodo.get().getUser());
-            Todo savedTodo = todoRepository.save(todoToUpdate);
+            Todo todoToSave = updateTodo(foundTodo.get(), todoToUpdate);
+            Todo savedTodo = todoRepository.save(todoToSave);
             log.info("Todo {} has been updated.", savedTodo);
             return todo2TodoDtoConverter.apply(savedTodo);
         } else {
             return create(todoToUpdate, auth);
         }
+    }
+
+    private Todo updateTodo(Todo todo, TodoToAddDto update) {
+        if (update.title() != null) {
+            todo.setTitle(update.title());
+        }
+        if (update.priority() != null) {
+            todo.setPriority(update.priority());
+        }
+        if (update.description() != null) {
+            todo.setDescription(update.description());
+        }
+        if (update.completed() != null) {
+            todo.setCompleted(update.completed());
+        }
+        return todo;
     }
 
     public void delete(Long id, Authentication auth) {

@@ -1,8 +1,8 @@
 package com.czyzewskialan.todo.todo.controller;
 
 import com.czyzewskialan.todo.todo.controller.dto.TodoDto;
+import com.czyzewskialan.todo.todo.controller.dto.TodoToAddDto;
 import com.czyzewskialan.todo.todo.service.TodoService;
-import com.czyzewskialan.todo.todo.domain.Todo;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -12,7 +12,6 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.*;
 
 import javax.persistence.EntityNotFoundException;
-import javax.validation.Valid;
 
 @RestController
 @RequestMapping("/todos")
@@ -28,7 +27,7 @@ public class TodoController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public TodoDto create(@RequestBody @Valid Todo todo, Authentication auth) {
+    public TodoDto create(@RequestBody TodoToAddDto todo, Authentication auth) {
         return todoService.create(todo, auth);
     }
 
@@ -38,9 +37,8 @@ public class TodoController {
     }
 
     @PutMapping("/{id}")
-    public TodoDto update(@RequestBody @Valid Todo todo, @PathVariable("id") Long id, Authentication auth) {
-        todo.setId(id);
-        return todoService.update(todo, auth);
+    public TodoDto update(@RequestBody TodoToAddDto todo, @PathVariable("id") Long id, Authentication auth) {
+        return todoService.update(todo, id, auth);
     }
 
     @DeleteMapping("/{id}")

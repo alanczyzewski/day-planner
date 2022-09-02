@@ -3,6 +3,7 @@ package com.czyzewskialan.todo.user.service;
 import com.czyzewskialan.todo.security.model.CurrentUser;
 import com.czyzewskialan.todo.user.controller.dto.User2UserDtoConverter;
 import com.czyzewskialan.todo.user.controller.dto.UserDto;
+import com.czyzewskialan.todo.user.controller.dto.UserToAdd2UserConverter;
 import com.czyzewskialan.todo.user.controller.dto.UserToAddDto;
 import com.czyzewskialan.todo.user.domain.User;
 import com.czyzewskialan.todo.user.persistance.UserRepository;
@@ -64,7 +65,7 @@ class UserServiceTest {
         user = User.builder().login(USERNAME_1).role(User.Role.USER).passwordHash(PASSWORD_HASH).build();
         admin = User.builder().login(USERNAME_2).role(User.Role.ADMIN).build();
         autoCloseable = openMocks(this);
-        userService = new UserService(userRepository, passwordEncoder, new User2UserDtoConverter());
+        userService = new UserService(userRepository, passwordEncoder, new User2UserDtoConverter(), new UserToAdd2UserConverter(passwordEncoder));
     }
 
     @AfterEach
