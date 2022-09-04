@@ -29,6 +29,7 @@ import static com.czyzewskialan.todo.utils.LoggingUtils.obfuscatePasswordHash;
 @RequiredArgsConstructor
 @Slf4j
 public class UserService {
+    public static final int LENGTH_RANDOM_PASSWORD = 10;
     static final String MESSAGE_ACCESS_DENIED_CHANGE_PASSWORD = "Cannot change other user's password";
 
     private final UserRepository userRepository;
@@ -89,7 +90,7 @@ public class UserService {
     public String resetPassword(String login) {
         User user = userRepository.findById(login)
                 .orElseThrow(() -> new EntityNotFoundException(login));
-        String randomPassword = RandomStringUtils.randomAlphanumeric(10);
+        String randomPassword = RandomStringUtils.randomAlphanumeric(LENGTH_RANDOM_PASSWORD);
         user.setPasswordHash(passwordEncoder.encode(randomPassword));
         userRepository.save(user);
         log.info("Reset password for user {}.", obfuscatePasswordHash(user));

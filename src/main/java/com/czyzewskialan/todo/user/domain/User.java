@@ -5,7 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 
 import javax.persistence.*;
-import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -17,20 +17,23 @@ import java.util.List;
 @Entity
 @Table(name = "USERS")
 public class User {
+    public static final User.Role DEFAULT_ROLE = User.Role.USER;
+
     @Id
-    @NotEmpty
+    @NotBlank
     private String login;
 
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
-    @NotEmpty
+    @NotBlank
     private String passwordHash;
 
     @Enumerated(EnumType.STRING)
-    @NotNull
     private Role role;
 
+    @NotNull
     private LocalDateTime dateCreated;
 
+    @NotNull
     private LocalDateTime dateUpdated;
 
     @ToString.Exclude
@@ -42,6 +45,7 @@ public class User {
         LocalDateTime now = LocalDateTime.now();
         dateCreated = now;
         dateUpdated = now;
+        role = role != null ? role : DEFAULT_ROLE;
     }
 
     @PreUpdate

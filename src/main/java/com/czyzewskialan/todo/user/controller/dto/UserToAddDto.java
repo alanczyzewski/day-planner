@@ -2,7 +2,8 @@ package com.czyzewskialan.todo.user.controller.dto;
 
 import com.czyzewskialan.todo.user.domain.User;
 import lombok.*;
-import org.hibernate.validator.constraints.NotEmpty;
+
+import javax.validation.constraints.NotBlank;
 
 @NoArgsConstructor
 @AllArgsConstructor
@@ -11,10 +12,10 @@ import org.hibernate.validator.constraints.NotEmpty;
 @Setter
 public class UserToAddDto {
 
-    @NotEmpty
+    @NotBlank
     private String login;
 
-    @NotEmpty
+    @NotBlank
     private String password;
 
     private User.Role role = User.Role.USER;

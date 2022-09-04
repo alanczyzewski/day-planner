@@ -58,7 +58,6 @@ public class UserController {
         userService.changePassword(login, newPassword, auth);
     }
 
-
     @ExceptionHandler(EntityExistsException.class)
     @ResponseStatus(value = HttpStatus.CONFLICT)
     public String entityExistsHandler(EntityExistsException e) {
@@ -70,5 +69,4 @@ public class UserController {
     public String entityNotFoundHandler(EntityNotFoundException e) {
         return String.format("User \"%s\" not found.", e.getMessage());
     }
-
 }
